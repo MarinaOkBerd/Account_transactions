@@ -1,7 +1,8 @@
 import datetime as dt
 import pytest
 
-from study_project.src.main import convert_date_strings
+
+from study_project.src import main
 
 
 @pytest.mark.parametrize(
@@ -83,7 +84,22 @@ from study_project.src.main import convert_date_strings
     ]
 )
 def test_convert_date_strings(operations, expected_data):
-    convert_date_strings(operations)
+    main.convert_date_strings(operations)
     assert operations == expected_data
 
+
+@pytest.mark.parametrize(
+    'json_filepath,expected_data',
+    [
+        pytest.param(
+            r'.\static\test_get_last_executed_operations\operations_without_date.json',
+            [],
+            id='operations_without_date'
+        ),
+    ]
+)
+def test_get_last_executed_operations(load_json_file, json_filepath, expected_data):
+    operations = load_json_file(json_filepath)
+    last_executed_operations = main.get_last_executed_operations(operations)
+    assert last_executed_operations == expected_data
 
