@@ -1,5 +1,3 @@
-NUMBER_OF_DIGITS_IN_CARD_NUMBER = 16
-
 
 class OperationFormatter:
     def __init__(
@@ -32,11 +30,19 @@ class OperationFormatter:
 {amount} {currency_name}"""
 
     def mask_card_number(self, card_number):
+        if len(card_number) != len(self.card_number_format.replace(' ', '')):
+            raise Exception(
+                f'Card number {card_number} cannot be'
+                f'masked with a mask {self.card_number_format}'
+            )
         i = 0
         symbols = []
         for mask_symbol in self.card_number_format:
             if mask_symbol == 'X':
                 symbols.append(card_number[i])
+                i += 1
+            elif mask_symbol == '*':
+                symbols.append('*')
                 i += 1
             else:
                 symbols.append(mask_symbol)
@@ -44,17 +50,19 @@ class OperationFormatter:
         return ''.join(symbols)
 
     def mask_account(self, account):
+        if len(account) < self.number_of_digits_displayed_in_account + 2:
+            raise Exception(
+                f' Incorrect account number: {account}. '
+                'The number of digits must be greater that'
+                f'{self.number_of_digits_displayed_in_account + 2}'
+            )
         return '**' + account[-self.number_of_digits_displayed_in_account:]
 
     def format_requisites(self, requisites_string):
         title, digits = requisites_string.rsplit(maxsplit=1)
-        if len(digits) == NUMBER_OF_DIGITS_IN_CARD_NUMBER:
-            masked_card_number = self.mask_card_number(digits)
-            return f'{title} {masked_card_number}'
-        elif len(digits) > NUMBER_OF_DIGITS_IN_CARD_NUMBER:
+        if title.startswith('Счет') or title.startswith('Счёт'):
             masked_account = self.mask_account(digits)
             return f'{title} {masked_account}'
         else:
-            raise Exception(
-                f'Incorrect card number/account: {requisites_string}'
-            )
+            masked_card_number = self.mask_card_number(digits)
+            return f'{title} {masked_card_number}'
